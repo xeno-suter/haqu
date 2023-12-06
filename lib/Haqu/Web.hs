@@ -27,12 +27,31 @@ main = scotty 3000 $ do
   get "/quiz/:id/start" (quizNameAction "get")
   post "/quiz/:id/start" (quizNameAction "post")
 
+  get "/quiz/:id/result" resultAction
+
 
 styles :: ActionM ()
 styles = do
     setHeader "Content-Type" "text/css"
     file "static/styles.css"
 
+resultAction :: ActionM ()
+resultAction = do
+  quizId <- captureParam "id"
+  answers <- liftIO $ readQuizAnswers quizId
+  quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
+  htmlString $ e "H1" "haqu"
+    ++ e "H2" ("Results: " ++ q_name quiz)
+    ++ e "P" (q_desc quiz)
+    ++ table quiz
+  where
+    table quiz = e "TABLE" (tableHeader quiz)
+    tableHeader quiz = e "TR" ("Player" ++ dyn quiz)
+    dyn quiz = (map (\q -> e "TH" ("Q" ++ q)) [1..(countQuestions (q_questions quiz))])
+
+countQuestions :: [Question] -> Int
+countQuestions [] = 0
+countQuestions q = (countQuestions ( q)) + 1
 
 quizNameRedirect :: ActionM ()
 quizNameRedirect = do
