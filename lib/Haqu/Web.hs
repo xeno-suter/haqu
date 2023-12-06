@@ -7,8 +7,10 @@ import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text.Lazy as LT
 import Data.List
-import Haqu.Model
-import Haqu.QuizFileReader
+import Haqu.Model.Quiz
+import Haqu.Model.KeyValue
+import Haqu.Model.Answer
+import Haqu.FileReader
 
 type Html = String
 
