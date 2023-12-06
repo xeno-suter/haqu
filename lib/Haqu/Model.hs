@@ -1,10 +1,10 @@
 module Haqu.Model (
-    Question,
-    Quiz,
-    QuestionType,
-    QuizAnswer,
-    PlayerAnswers,
-    QuizAnswers
+    Question(..),
+    Quiz(..),
+    QuestionType(..),
+    QuizAnswer(..),
+    PlayerAnswers(..),
+    QuizAnswers(..)
 ) where
 
 -- Datenstruktur für Frage Typen
