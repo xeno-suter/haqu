@@ -1,10 +1,11 @@
-module Haqu.FileReader (readQuizFile, readAnswerFile) where
+module Haqu.FileReader (readQuizFile, readPlayerAnswers, readQuizAnswers) where
 
 import Data.List
 import Data.Char (isSpace)
 import Haqu.Model.Answer
 import Haqu.Model.Quiz
 import Haqu.Model.KeyValue
+import System.Directory ( getDirectoryContents )
 
 -- Common Funktion für File lesen und parsen
 readFileAndParse :: (String -> String -> a) -> FilePath -> IO a
@@ -14,16 +15,24 @@ readFileAndParse parse filePath = do
     return $ parse fileName content
 
 -- Funktion zum Einlesen einer Antwortdatei
-readAnswerFile :: FilePath -> IO PlayerAnswers
-readAnswerFile = readFileAndParse parseAnswers
+readPlayerAnswers :: FilePath -> IO PlayerAnswers
+readPlayerAnswers = readFileAndParse parseAnswers
+
+readQuizAnswers :: String -> IO QuizAnswers
+readQuizAnswers id = do
+  let path = "data/" ++ id ++ "/"
+  playerAnswers <- readAllFilesWithExtension ".txt" path
+  answers <- mapM readPlayerAnswers playerAnswers
+  return $ QuizAnswers id answers
 
 -- Funktion zum Einlesen einer Quizdatei
 readQuizFile :: FilePath -> IO Quiz
 readQuizFile = readFileAndParse parseQuiz
 
-
-
-
+readAllFilesWithExtension :: String -> FilePath -> IO [FilePath]
+readAllFilesWithExtension ext path = do
+  files <- getDirectoryContents path
+  return $ map (path ++) (filter (ext `isSuffixOf`) files)
 
 
 
