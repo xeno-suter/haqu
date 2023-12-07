@@ -23,6 +23,8 @@ library
   import:              common-properties
   exposed-modules:     Haqu.Web,
                        Haqu.FileReader,
+                       Haqu.Components.Helper,
+                       Haqu.Pages.Home,
                        Haqu.Model.Answer, Haqu.Model.KeyValue, Haqu.Model.Quiz
   build-depends:       
   hs-source-dirs:      lib

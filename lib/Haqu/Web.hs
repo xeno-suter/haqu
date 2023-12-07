@@ -2,14 +2,15 @@
 
 module Haqu.Web where
 import Web.Scotty
-    ( file, get, html, middleware, scotty, setHeader, ActionM, captureParam, post, redirect, formParam, queryParam )
+    ( file, get, middleware, scotty, setHeader, ActionM, captureParam, post, redirect, formParam, queryParam )
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text.Lazy as LT
-import Data.List
 import Haqu.Model.Quiz
 import Haqu.Model.Answer
 import Haqu.FileReader
+import Haqu.Components.Helper
+import Haqu.Pages.Home
 
 type Html = String
 
@@ -120,59 +121,9 @@ quizNameForm = do
     dynComp quiz = e "DIV" (quizTitle quiz ++ nameForm)
 
 quizNameAction :: String -> ActionM ()
-quizNameAction "post" = do
-  quizNameRedirect
+quizNameAction "post" = do quizNameRedirect
 quizNameAction "get" = do quizNameForm
 quizNameAction _ = error "Unknown method"
 
 quizAction :: ActionM ()
-quizAction = do
-  htmlString $ e "H1" "Quiz"
-
-
-homeAction :: ActionM ()
-homeAction = do
-    liftIO (putStrLn "DEBUG: Home Action Called")
-    quizzList <- liftIO quizzes
-    htmlString $ htmlDoc (e "UL" (concatMap quizItem quizzList)) "haqu"
-    where
-        quizItem quiz = e "LI" (quizDesc quiz ++ " " ++ quizStartLink quiz)
-        quizDesc quiz = e "B" ("[" ++ q_id quiz ++ "] " ++ q_name quiz) ++ e "SPAN" (" " ++ q_desc quiz)
-        quizStartLink quiz = ea "A" [("href", "/quiz/" ++ q_id quiz++ "/start")] "Start"
-
-quizPaths :: [FilePath]
-quizPaths = ["data/q0.txt", "data/q1.txt", "data/q2.txt"]
-
-quizzes :: IO [Quiz]
-quizzes = mapM readQuizFile quizPaths
-
-
-htmlDefaultHead :: Html
-htmlDefaultHead = htmlHead (htmlStylesheet "/styles.css")
-
-htmlBody :: Html -> String -> Html
-htmlBody content title = e "BODY" (e "H1" title ++ content)
-
-htmlHead :: Html -> Html
-htmlHead = e "HEAD"
-
-htmlStylesheet :: Html -> Html
-htmlStylesheet href = ea "LINK" [("rel", "stylesheet"), ("href", href)] ""
-
-htmlDoc :: Html -> String -> Html
-htmlDoc body title = e "html" (htmlDefaultHead ++ htmlBody body title)
-
-htmlString :: String -> ActionM ()
-htmlString = html . LT.pack
-
-
--- Html DSL
-e :: String -> Html -> Html
-e tag = ea tag []
-
-
-ea :: String -> [(String, String)] -> Html -> Html
-ea tag attrs kids = concat $ ["<", tag] ++ attrsHtml attrs ++ [">", kids, "</", tag, ">"]
-  where attrsHtml [] = []
-        attrsHtml as = " " : intersperse " " (map attrHtml as)
-        attrHtml (key, value) = key ++ "='" ++ value ++ "'"
+quizAction = do htmlString $ e "H1" "Bitte wähle ein Quiz aus:"
