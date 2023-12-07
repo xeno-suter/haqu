@@ -2,13 +2,12 @@
 
 module Haqu.Web where
 import Web.Scotty
-    ( file, get, html, middleware, scotty, setHeader, ActionM, captureParam, post, redirect, formParam )
+    ( file, get, html, middleware, scotty, setHeader, ActionM, captureParam, post, redirect, formParam, queryParam )
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text.Lazy as LT
 import Data.List
 import Haqu.Model.Quiz
-import Haqu.Model.KeyValue
 import Haqu.Model.Answer
 import Haqu.FileReader
 
@@ -29,35 +28,83 @@ main = scotty 3000 $ do
 
   get "/quiz/:id/result" resultAction
 
+  get "/quiz/:quiz/:question" (questionAction "get")
+  post "/quiz/:quiz/:question" (questionAction "post")
+
 
 styles :: ActionM ()
 styles = do
     setHeader "Content-Type" "text/css"
     file "static/styles.css"
 
+
+questionAction :: String -> ActionM ()
+questionAction "get" = do
+  quizId <- captureParam "quiz"
+  questionId <- captureParam "question"
+  quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
+  htmlString $ htmlDoc (formWrapper "Submit" (questionInput quiz questionId)) "haqu"
+questionAction "post" = do
+  quizId <- captureParam "quiz"
+  questionId <- captureParam "question"
+  player <- queryParam "player"
+  answer <- formParam "answer"
+  htmlString $ e "h1" player ++ e "h2" quizId ++ e "h3" questionId ++ e "h4" answer
+questionAction _ = error "Unknown method"
+
+
+questionInput :: Quiz -> Int -> Html
+questionInput quiz qId
+  | q_type question == FALSETRUE = trueFalseQuestion question
+  | q_type question == SINGLECHOICE = singleChoiceQuestion question
+  | otherwise = error "Unknown question type"
+  where
+    question = getQuestion quiz qId
+
+getQuestion :: Quiz -> Int -> Question
+getQuestion quiz position = q_questions quiz !! position
+
+formWrapper :: String -> Html -> Html
+formWrapper submitButton content = ea "FORM" [("METHOD", "POST")] (content ++ e "BUTTON" submitButton)
+
+singleChoiceQuestion :: Question -> Html
+singleChoiceQuestion question = e "DIV" (label ++ options)
+  where
+    label = e "LABEL" (q_question question)
+    options = e "DIV" (mconcat (map option (zip [0..] (q_answers question))))
+    option (index, answer) = ea "INPUT" [("type", "radio"), ("name", "answer"), ("value", (show index))] answer
+
+trueFalseQuestion :: Question -> Html
+trueFalseQuestion question = e "DIV" (label ++ input ++ ipnut2)
+  where
+    label = e "LABEL" (q_question question)
+    input = ea "INPUT" [("type", "radio"), ("name", "answer"), ("value", "True")] "True"
+    ipnut2 = ea "INPUT" [("type", "radio"), ("name", "answer"), ("value", "False")] "False"
+
+
 resultAction :: ActionM ()
 resultAction = do
   quizId <- captureParam "id"
   answers <- liftIO $ readQuizAnswers quizId
   quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
-  htmlString $ e "H1" "haqu"
-    ++ e "H2" ("Results: " ++ q_name quiz)
+  htmlString $ htmlDoc
+    ( e "H2" ("Results: " ++ q_name quiz)
     ++ e "P" (q_desc quiz)
-    ++ table quiz
+    ++ table quiz answers) "haqu"
   where
-    table quiz = e "TABLE" (tableHeader quiz)
-    tableHeader quiz = e "TR" ("Player" ++ dyn quiz)
-    dyn quiz = (map (\q -> e "TH" ("Q" ++ q)) [1..(countQuestions (q_questions quiz))])
+    table quiz answers = e "TABLE" (mconcat ((tableHeader quiz) : (tableRows answers)))
+    tableHeader quiz = e "TR" (mconcat $ e "TH" "Player" : map (\q -> e "TH" ("Q" ++ show q)) [1..length (q_questions quiz)])
+    tableRows answers = map tableRow (qa_player_answer answers)
+    tableRow answer = e "TR" (mconcat $ e "TD" (pa_player answer) : map (\a -> ea "TD" [("class", "correct")] (qa_answer a)) (pa_answers answer))
 
-countQuestions :: [Question] -> Int
-countQuestions [] = 0
-countQuestions q = (countQuestions ( q)) + 1
+isAnswerCorrect :: Question -> QuizAnswer -> Bool
+isAnswerCorrect question answer = q_solution question == qa_answer answer
 
 quizNameRedirect :: ActionM ()
 quizNameRedirect = do
   quizId <- captureParam "id"
   player <- formParam "player"
-  redirect $ LT.pack $ "/quiz/" ++ quizId ++ "/question/0?player=" ++ player
+  redirect $ LT.pack $ "/quiz/" ++ quizId ++ "/0?player=" ++ player
 
 quizNameForm :: ActionM ()
 quizNameForm = do
@@ -74,30 +121,46 @@ quizNameForm = do
 
 quizNameAction :: String -> ActionM ()
 quizNameAction "post" = do
-  quizNameRedirect 
+  quizNameRedirect
 quizNameAction "get" = do quizNameForm
 quizNameAction _ = error "Unknown method"
 
 quizAction :: ActionM ()
 quizAction = do
   htmlString $ e "H1" "Quiz"
-  
+
 
 homeAction :: ActionM ()
 homeAction = do
     liftIO (putStrLn "DEBUG: Home Action Called")
     quizzList <- liftIO quizzes
-    htmlString $ e "H1" "haqu" ++ e "UL" (concatMap quizItem quizzList)
+    htmlString $ htmlDoc (e "UL" (concatMap quizItem quizzList)) "haqu"
     where
         quizItem quiz = e "LI" (quizDesc quiz ++ " " ++ quizStartLink quiz)
         quizDesc quiz = e "B" ("[" ++ q_id quiz ++ "] " ++ q_name quiz) ++ e "SPAN" (" " ++ q_desc quiz)
         quizStartLink quiz = ea "A" [("href", "/quiz/" ++ q_id quiz++ "/start")] "Start"
-        
+
 quizPaths :: [FilePath]
 quizPaths = ["data/q0.txt", "data/q1.txt", "data/q2.txt"]
 
 quizzes :: IO [Quiz]
 quizzes = mapM readQuizFile quizPaths
+
+
+htmlDefaultHead :: Html
+htmlDefaultHead = htmlHead (htmlStylesheet "/styles.css")
+
+htmlBody :: Html -> String -> Html
+htmlBody content title = e "BODY" (e "H1" title ++ content)
+
+htmlHead :: Html -> Html
+htmlHead = e "HEAD"
+
+htmlStylesheet :: Html -> Html
+htmlStylesheet href = ea "LINK" [("rel", "stylesheet"), ("href", href)] ""
+
+htmlDoc :: Html -> String -> Html
+htmlDoc body title = e "html" (htmlDefaultHead ++ htmlBody body title)
 
 htmlString :: String -> ActionM ()
 htmlString = html . LT.pack

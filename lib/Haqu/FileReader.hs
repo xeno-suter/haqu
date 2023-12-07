@@ -6,6 +6,7 @@ import Haqu.Model.Answer
 import Haqu.Model.Quiz
 import Haqu.Model.KeyValue
 import System.Directory ( getDirectoryContents )
+import System.IO
 
 -- Common Funktion für File lesen und parsen
 readFileAndParse :: (String -> String -> a) -> FilePath -> IO a
@@ -98,3 +99,7 @@ parseKeyValue :: String -> KeyValue
 parseKeyValue str = case break (== ':') str of
     (k, ':' : v) -> KeyValue k v
     _            -> error "Invalid key-value format"
+
+
+----------------------------------
+

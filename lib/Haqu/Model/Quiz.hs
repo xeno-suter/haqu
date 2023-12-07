@@ -5,7 +5,7 @@ module Haqu.Model.Quiz (
 ) where
 
 -- Datenstruktur für Frage Typen
-data QuestionType = SINGLECHOICE | FALSETRUE deriving Show
+data QuestionType = SINGLECHOICE | FALSETRUE deriving (Show, Eq)
 
 -- Datenstruktur für eine Frage
 data Question = Question {
