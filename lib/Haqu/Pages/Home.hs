@@ -6,6 +6,7 @@ import Control.Monad.IO.Class (liftIO)
 import Haqu.Model.Quiz
 import Haqu.FileReader
 
+-- Home Page Actino inkl. HTML
 homeAction :: ActionM ()
 homeAction = do
   quizzList <- liftIO quizzes

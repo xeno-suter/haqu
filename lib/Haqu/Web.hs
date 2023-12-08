@@ -10,6 +10,7 @@ import Haqu.Model.Quiz
 import Haqu.Model.Answer
 import Haqu.FileReader
 import Haqu.Components.Helper
+import Haqu.Components.Form
 import Haqu.Pages.Home
 
 type Html = String
@@ -53,7 +54,6 @@ questionAction "post" = do
   htmlString $ e "h1" player ++ e "h2" quizId ++ e "h3" questionId ++ e "h4" answer
 questionAction _ = error "Unknown method"
 
-
 questionInput :: Quiz -> Int -> Html
 questionInput quiz qId
   | q_type question == FALSETRUE = trueFalseQuestion question
@@ -64,24 +64,6 @@ questionInput quiz qId
 
 getQuestion :: Quiz -> Int -> Question
 getQuestion quiz position = q_questions quiz !! position
-
-formWrapper :: String -> Html -> Html
-formWrapper submitButton content = ea "FORM" [("METHOD", "POST")] (content ++ e "BUTTON" submitButton)
-
-singleChoiceQuestion :: Question -> Html
-singleChoiceQuestion question = e "DIV" (label ++ options)
-  where
-    label = e "LABEL" (q_question question)
-    options = e "DIV" (mconcat (map option (zip [0..] (q_answers question))))
-    option (index, answer) = ea "INPUT" [("type", "radio"), ("name", "answer"), ("value", (show index))] answer
-
-trueFalseQuestion :: Question -> Html
-trueFalseQuestion question = e "DIV" (label ++ input ++ ipnut2)
-  where
-    label = e "LABEL" (q_question question)
-    input = ea "INPUT" [("type", "radio"), ("name", "answer"), ("value", "True")] "True"
-    ipnut2 = ea "INPUT" [("type", "radio"), ("name", "answer"), ("value", "False")] "False"
-
 
 resultAction :: ActionM ()
 resultAction = do
