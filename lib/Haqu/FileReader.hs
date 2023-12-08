@@ -5,7 +5,7 @@ import Data.Char (isSpace)
 import Haqu.Model.Answer
 import Haqu.Model.Quiz
 import Haqu.Model.KeyValue
-import System.Directory ( getDirectoryContents )
+import System.Directory ( doesDirectoryExist, createDirectory, listDirectory )
 import System.IO
 
 -- Common Funktion für File lesen und parsen
@@ -32,7 +32,7 @@ readQuizFile = readFileAndParse parseQuiz
 
 readAllFilesWithExtension :: String -> FilePath -> IO [FilePath]
 readAllFilesWithExtension ext path = do
-  files <- getDirectoryContents path
+  files <- listDirectory path
   return $ map (path ++) (filter (ext `isSuffixOf`) files)
 
 
@@ -76,7 +76,8 @@ parseQuizContent (l:ls) (n, d, q)
     | "TYPE:" `isPrefixOf` l = parseQuizContent remainingLines (n, d, q ++ [parseQuestion questionLines])
     | otherwise = parseQuizContent ls (n, d, q)
   where
-    (questionLines, remainingLines) = break null (l : ls)
+    questionLines = (l:ls)
+    remainingLines = ls
 
 -- Funktion zum Parsen einer Frage
 parseQuestion :: [String] -> Question
@@ -88,7 +89,7 @@ parseQuestion lines = Question qType qText ans sOpt
         other          -> error $ "Unknown Question Type: " ++ other
     qText = getValue (head $ dropWhile (not . ("Q:" `isPrefixOf`)) lines) "Q:"
     ans = map (`getValue` "A:") (filter ("A:" `isPrefixOf`) lines)
-    sOpt = getValue (head lines) "S:"
+    sOpt = concatMap (`getValue` "S:") (filter ("S:" `isPrefixOf`) lines)
 
 -- Hilfsfunktion zum Extrahieren des Werts aus einem "Key-Value-Paar"
 getValue :: String -> String -> String
@@ -103,3 +104,17 @@ parseKeyValue str = case break (== ':') str of
 
 ----------------------------------
 
+storeAnswer :: String -> String -> Int -> String -> IO Bool
+storeAnswer quizId pName qNumber qAnswer = 
+  let path = "data/" ++ quizId ++ "/" ++ pName ++ ".txt"
+  in do
+    checkIfDirExistsElseCreate ("data/" ++ quizId)
+    appendFile path (show qNumber ++ ":" ++ qAnswer ++ "\n")
+    return True
+
+checkIfDirExistsElseCreate :: String -> IO ()
+checkIfDirExistsElseCreate path = do
+  dirExists <- doesDirectoryExist path
+  if dirExists
+    then return ()
+    else createDirectory path
