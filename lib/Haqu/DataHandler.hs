@@ -20,7 +20,6 @@ import System.Directory
       removeFile,
       doesFileExist )
 import Control.Monad
-import GHC.Base (Module)
 
 -- Common Funktion für File lesen und parsen
 readFileAndParse :: (String -> String -> a) -> FilePath -> IO a
