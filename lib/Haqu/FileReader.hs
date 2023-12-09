@@ -86,7 +86,7 @@ parseQuestion ls = Question qType qText ans sOpt
         other          -> error $ "Unknown Question Type: " ++ other
     qText = getValue (head $ dropWhile (not . ("Q:" `isPrefixOf`)) ls) "Q:"
     ans = map (`getValue` "A:") (filter ("A:" `isPrefixOf`) ls)
-    sOpt = concatMap (`getValue` "S:") (filter ("S:" `isPrefixOf`) ls)
+    sOpt = getValue (head $ dropWhile (not . ("S:" `isPrefixOf`)) ls) "S:"
 
 -- Hilfsfunktion zum Extrahieren des Werts aus einem "Key-Value-Paar"
 getValue :: String -> String -> String
