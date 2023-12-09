@@ -2,16 +2,16 @@
 
 module Haqu.Web where
 import Web.Scotty
-    ( file, get, middleware, scotty, setHeader, ActionM, captureParam, post, redirect, formParam, queryParam )
+    ( file, get, middleware, scotty, setHeader, ActionM, captureParam, post, formParam, queryParam )
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Control.Monad.IO.Class (liftIO)
-import qualified Data.Text.Lazy as LT
 import Haqu.Model.Quiz
 import Haqu.Model.Answer
 import Haqu.FileReader
 import Haqu.Components.Helper
 import Haqu.Components.Form
 import Haqu.Pages.Home
+import Haqu.Pages.QuizPlayer
 
 type Html = String
 
@@ -82,30 +82,6 @@ resultAction = do
 
 isAnswerCorrect :: Question -> QuizAnswer -> Bool
 isAnswerCorrect question answer = q_solution question == qa_answer answer
-
-quizNameRedirect :: ActionM ()
-quizNameRedirect = do
-  quizId <- captureParam "id"
-  player <- formParam "player"
-  redirect $ LT.pack $ "/quiz/" ++ quizId ++ "/0?player=" ++ player
-
-quizNameForm :: ActionM ()
-quizNameForm = do
-  quizId <- captureParam "id"
-  quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
-  htmlString $ e "H1" "haqu" ++ dynComp quiz
-  where
-    quizTitle quiz = e "H2" ("Starting " ++ q_name quiz)
-    nameForm = ea "FORM" [("METHOD", "POST"),  ("action", "#")] (label ++ input ++ submit)
-    label = e "LABEL" "Please enter your name:"
-    input = ea "INPUT" [("type", "text"), ("name", "player")] ""
-    submit = ea "BUTTON" [("type", "submit")] "Start Quiz"
-    dynComp quiz = e "DIV" (quizTitle quiz ++ nameForm)
-
-quizNameAction :: String -> ActionM ()
-quizNameAction "post" = do quizNameRedirect
-quizNameAction "get" = do quizNameForm
-quizNameAction _ = error "Unknown method"
 
 quizAction :: ActionM ()
 quizAction = do htmlString $ e "H1" "Bitte wähle ein Quiz aus:"

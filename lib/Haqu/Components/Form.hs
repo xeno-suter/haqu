@@ -31,10 +31,15 @@ textInput l n = inputGroup label input
     input = inputField "text" n "" ""
 
 inputField :: String -> String -> String -> String -> Html
-inputField iType n v = ea "INPUT" [("type", iType), ("name", n), ("value", v)]
+inputField iType n v l = e "DIV" field
+  where
+    field = ea "INPUT" [("type", iType), ("name", n), ("value", v)] l
 
 inputGroup :: Html -> Html -> Html
-inputGroup label input = ea "DIV" [] (label ++ input)
+inputGroup label input = ea "DIV" [] (labelWrapper ++ inputWrapper)
+  where
+    labelWrapper = ea "DIV" [("class", "label")] label
+    inputWrapper = ea "DIV" [("class", "input")] input
 
 formWrapper :: String -> Html -> Html
 formWrapper submitLabel content = ea "FORM" [("METHOD", "POST")] kids
