@@ -8,16 +8,18 @@ import Web.Scotty
 import Haqu.Components.Helper
 import Control.Monad.IO.Class (liftIO)
 import Haqu.Model.Quiz
-import Haqu.FileReader
+import Haqu.DataHandler
 import Haqu.Components.Form
 
 type Html = String
 
+-- Quiz Question Method Dispatcher
 questionAction :: String -> ActionM ()
 questionAction "get" = handleGetRequest
 questionAction "post" = handlePostRequest
 questionAction _ = error "Unknown method"
 
+-- Quiz Question Form
 handleGetRequest :: ActionM ()
 handleGetRequest = do
   quizId <- captureParam "quiz"
@@ -25,6 +27,7 @@ handleGetRequest = do
   quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
   htmlString $ htmlDoc (formWrapper "Submit" (questionInput quiz questionId)) "haqu"
 
+-- Quiz Question Redirect zur nächsten Frage oder zum Ergebnis
 handlePostRequest :: ActionM ()
 handlePostRequest = do
   quizId <- captureParam "quiz"
@@ -41,9 +44,11 @@ handlePostRequest = do
   else
     error "Could not store answer"
 
+-- Hilfsfunktion zum Prüfen ob es noch eine nächste Frage gibt
 hasNextQuestion :: Quiz -> Int -> Bool
 hasNextQuestion quiz position = length (q_questions quiz) > position + 1
 
+-- Hilfsfunktion zum Rendern der Frage anhand des Typs
 questionInput :: Quiz -> Int -> Html
 questionInput quiz qId
   | q_type question == FALSETRUE = trueFalseQuestion question
@@ -52,5 +57,6 @@ questionInput quiz qId
   where
     question = getQuestion quiz qId
 
+-- Hilffunktion zum finden der Aktuellen Frage anhand der Position
 getQuestion :: Quiz -> Int -> Question
 getQuestion quiz position = q_questions quiz !! position

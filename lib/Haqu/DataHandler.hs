@@ -1,4 +1,5 @@
-module Haqu.FileReader (
+module Haqu.DataHandler (
+  readAllQuizFiles,
   readQuizFile,
   readPlayerAnswers,
   readQuizAnswers,
@@ -11,9 +12,13 @@ import Data.Char (isSpace)
 import Haqu.Model.Answer
 import Haqu.Model.Quiz
 import Haqu.Model.KeyValue
-import System.Directory ( doesDirectoryExist, createDirectory, listDirectory, removeFile )
+import System.Directory
+    ( doesDirectoryExist,
+      createDirectory,
+      listDirectory,
+      removeFile,
+      doesFileExist )
 import Control.Monad
-import System.Directory (doesFileExist)
 
 -- Common Funktion für File lesen und parsen
 readFileAndParse :: (String -> String -> a) -> FilePath -> IO a
@@ -26,6 +31,7 @@ readFileAndParse parse filePath = do
 readPlayerAnswers :: FilePath -> IO PlayerAnswers
 readPlayerAnswers = readFileAndParse parseAnswers
 
+-- Funktion zum Einlesen aller Antwortdateien eines Quiz
 readQuizAnswers :: String -> IO QuizAnswers
 readQuizAnswers quizId = do
   let path = "data/" ++ quizId ++ "/"
@@ -33,14 +39,25 @@ readQuizAnswers quizId = do
   answers <- mapM readPlayerAnswers playerAnswers
   return $ QuizAnswers quizId answers
 
+-- Funktion zum Einlesen aller Quizdateien
+readAllQuizFiles :: IO [Quiz]
+readAllQuizFiles = do
+  quizFiles <- readAllFilesWithExtension ".txt" "data/"
+  mapM readQuizFile quizFiles
+
 -- Funktion zum Einlesen einer Quizdatei
 readQuizFile :: FilePath -> IO Quiz
 readQuizFile = readFileAndParse parseQuiz
 
+-- Funktion zum Einlesen aller Dateien mit einer bestimmten Endung
 readAllFilesWithExtension :: String -> FilePath -> IO [FilePath]
 readAllFilesWithExtension ext path = do
   files <- listDirectory path
-  return $ map (path ++) (filter (ext `isSuffixOf`) files)
+  return $ sortByName $ map (path ++) (filter (ext `isSuffixOf`) files)
+
+-- Funktion zum Sortieren einer Liste von Dateipfaden nach dem Dateinamen
+sortByName :: [FilePath] -> [FilePath]
+sortByName = sortBy (\a b -> compare (extractFileName a) (extractFileName b))
 
 -- Funktion zum Parsen der Antworten
 parseAnswers :: String -> String -> PlayerAnswers
@@ -98,9 +115,7 @@ parseKeyValue str = case break (== ':') str of
     (k, ':' : v) -> KeyValue k v
     _            -> error "Invalid key-value format"
 
-
-----------------------------------
-
+-- Funktion zum Löschen einer Antwortdatei
 removeOldAnswers :: String -> String -> IO Bool
 removeOldAnswers quizId pName = do
   let path = "data/" ++ quizId ++ "/" ++ pName ++ ".txt"
@@ -112,12 +127,15 @@ removeOldAnswers quizId pName = do
     else
       return True
 
+-- Funktion zum Speichern einer Antwort
 storeAnswer :: String -> String -> Int -> String -> IO Bool
 storeAnswer quizId pName qNumber qAnswer = do
   let path = "data/" ++ quizId ++ "/" ++ pName ++ ".txt"
+  checkIfDirExistsElseCreate ("data/" ++ quizId)
   appendFile path (show qNumber ++ ":" ++ qAnswer ++ "\n")
   return True
 
+-- Funktion zum Prüfen ob ein Verzeichnis existiert und es ggf. zu erstellen
 checkIfDirExistsElseCreate :: FilePath -> IO ()
 checkIfDirExistsElseCreate path = do
   dirExists <- doesDirectoryExist path

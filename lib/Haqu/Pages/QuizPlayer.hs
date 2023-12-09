@@ -8,10 +8,10 @@ import Web.Scotty
 import Haqu.Components.Helper
 import Control.Monad.IO.Class (liftIO)
 import Haqu.Model.Quiz
-import Haqu.FileReader
+import Haqu.DataHandler
 import Haqu.Components.Form
 
--- Quiz Name Redirect
+-- Quiz Player Redirect zum Quiz
 quizNameRedirect :: ActionM ()
 quizNameRedirect = do
   quizId <- captureParam "id"
@@ -22,7 +22,7 @@ quizNameRedirect = do
   else
     error "Could not remove old answers"
 
--- Quiz Name Form
+-- Quiz Player Name Form
 quizNameForm :: ActionM ()
 quizNameForm = do
   quizId <- captureParam "id"
@@ -34,7 +34,7 @@ quizNameForm = do
     playerName = textInput "Please enter your name:" "player"
     dynComp quiz = e "DIV" (quizTitle quiz ++ playerForm)
     
--- Quiz Name Method Dispatcher
+-- Quiz Player Name Method Dispatcher
 quizNameAction :: String -> ActionM ()
 quizNameAction "post" = do quizNameRedirect
 quizNameAction "get" = do quizNameForm
