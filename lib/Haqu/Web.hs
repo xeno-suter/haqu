@@ -2,7 +2,7 @@
 
 module Haqu.Web where
 import Web.Scotty
-    ( file, get, middleware, scotty, setHeader, ActionM, captureParam, post, formParam, queryParam )
+    ( file, get, middleware, scotty, setHeader, ActionM, captureParam, post, formParam, queryParam, redirect )
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Control.Monad.IO.Class (liftIO)
 import Haqu.Model.Quiz
@@ -12,6 +12,7 @@ import Haqu.Components.Helper
 import Haqu.Components.Form
 import Haqu.Pages.Home
 import Haqu.Pages.QuizPlayer
+import qualified Data.Text.Lazy as LT
 
 type Html = String
 
@@ -51,8 +52,20 @@ questionAction "post" = do
   questionId <- captureParam "question"
   player <- queryParam "player"
   answer <- formParam "answer"
-  htmlString $ e "h1" player ++ e "h2" quizId ++ e "h3" questionId ++ e "h4" answer
+  quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
+  done <- liftIO $ storeAnswer quizId player questionId answer
+  if done then
+    if hasNextQuestion quiz questionId then
+        redirect $ LT.pack $ "/quiz/" ++ quizId ++ "/" ++ show (questionId + 1) ++ "?player=" ++ player
+    else
+      redirect $ LT.pack $ "/quiz/" ++ quizId ++ "/result"
+  else
+    error "Could not store answer"
 questionAction _ = error "Unknown method"
+
+hasNextQuestion :: Quiz -> Int -> Bool
+hasNextQuestion quiz position = length (q_questions quiz) > position + 1
+
 
 questionInput :: Quiz -> Int -> Html
 questionInput quiz qId

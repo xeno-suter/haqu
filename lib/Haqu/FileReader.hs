@@ -1,4 +1,9 @@
-module Haqu.FileReader (readQuizFile, readPlayerAnswers, readQuizAnswers) where
+module Haqu.FileReader (
+  readQuizFile,
+  readPlayerAnswers,
+  readQuizAnswers,
+  storeAnswer
+) where
 
 import Data.List
 import Data.Char (isSpace)
@@ -6,7 +11,7 @@ import Haqu.Model.Answer
 import Haqu.Model.Quiz
 import Haqu.Model.KeyValue
 import System.Directory ( doesDirectoryExist, createDirectory, listDirectory )
-import System.IO
+import Control.Monad
 
 -- Common Funktion für File lesen und parsen
 readFileAndParse :: (String -> String -> a) -> FilePath -> IO a
@@ -20,11 +25,11 @@ readPlayerAnswers :: FilePath -> IO PlayerAnswers
 readPlayerAnswers = readFileAndParse parseAnswers
 
 readQuizAnswers :: String -> IO QuizAnswers
-readQuizAnswers id = do
-  let path = "data/" ++ id ++ "/"
+readQuizAnswers quizId = do
+  let path = "data/" ++ quizId ++ "/"
   playerAnswers <- readAllFilesWithExtension ".txt" path
   answers <- mapM readPlayerAnswers playerAnswers
-  return $ QuizAnswers id answers
+  return $ QuizAnswers quizId answers
 
 -- Funktion zum Einlesen einer Quizdatei
 readQuizFile :: FilePath -> IO Quiz
@@ -34,16 +39,6 @@ readAllFilesWithExtension :: String -> FilePath -> IO [FilePath]
 readAllFilesWithExtension ext path = do
   files <- listDirectory path
   return $ map (path ++) (filter (ext `isSuffixOf`) files)
-
-
-
-
-
-
-
-
-
-
 
 -- Funktion zum Parsen der Antworten
 parseAnswers :: String -> String -> PlayerAnswers
@@ -63,7 +58,7 @@ extractFileName = takeWhile (/= '.') . reverse .(takeWhile (/= '/') . reverse)
 
 -- Funktion zum Parsen einer Quizdatei
 parseQuiz :: String -> String -> Quiz
-parseQuiz id content = Quiz id name desc questions
+parseQuiz quizId content = Quiz quizId name desc questions
   where
     (name, desc, questions) = parseQuizContent (lines content) ("", "", [])
 
@@ -76,7 +71,7 @@ parseQuizContent (l:ls) (n, d, q)
     | "TYPE:" `isPrefixOf` l = parseQuizContent remainingLines (n, d, q ++ [parseQuestion questionLines])
     | otherwise = parseQuizContent ls (n, d, q)
   where
-    questionLines = (l:ls)
+    questionLines = l:ls
     remainingLines = ls
 
 -- Funktion zum Parsen einer Frage
@@ -105,16 +100,12 @@ parseKeyValue str = case break (== ':') str of
 ----------------------------------
 
 storeAnswer :: String -> String -> Int -> String -> IO Bool
-storeAnswer quizId pName qNumber qAnswer = 
+storeAnswer quizId pName qNumber qAnswer = do
   let path = "data/" ++ quizId ++ "/" ++ pName ++ ".txt"
-  in do
-    checkIfDirExistsElseCreate ("data/" ++ quizId)
-    appendFile path (show qNumber ++ ":" ++ qAnswer ++ "\n")
-    return True
+  appendFile path (show qNumber ++ ":" ++ qAnswer ++ "\n")
+  return True
 
-checkIfDirExistsElseCreate :: String -> IO ()
+checkIfDirExistsElseCreate :: FilePath -> IO ()
 checkIfDirExistsElseCreate path = do
   dirExists <- doesDirectoryExist path
-  if dirExists
-    then return ()
-    else createDirectory path
+  unless dirExists $ createDirectory path
