@@ -4,11 +4,11 @@ module Haqu.Components.Helper (
   e,
   ea
 ) where
-
-import Web.Scotty
-  ( file, get, html, middleware, scotty, setHeader, ActionM, captureParam, post, redirect, formParam, queryParam )
+  
 import qualified Data.Text.Lazy as LT
 import Data.List
+import Web.Scotty (ActionM, html)
+
 type Html = String
 
 -- Standard HTML Head

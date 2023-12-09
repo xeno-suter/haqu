@@ -13,6 +13,7 @@ import Haqu.Model.Quiz
 import Haqu.Model.KeyValue
 import System.Directory ( doesDirectoryExist, createDirectory, listDirectory, removeFile )
 import Control.Monad
+import System.Directory (doesFileExist)
 
 -- Common Funktion für File lesen und parsen
 readFileAndParse :: (String -> String -> a) -> FilePath -> IO a
@@ -77,15 +78,15 @@ parseQuizContent (l:ls) (n, d, q)
 
 -- Funktion zum Parsen einer Frage
 parseQuestion :: [String] -> Question
-parseQuestion lines = Question qType qText ans sOpt
+parseQuestion ls = Question qType qText ans sOpt
   where
-    qType = case getValue (head lines) "TYPE:" of
+    qType = case getValue (head ls) "TYPE:" of
         "SINGLECHOICE" -> SINGLECHOICE
         "FALSETRUE"    -> FALSETRUE
         other          -> error $ "Unknown Question Type: " ++ other
-    qText = getValue (head $ dropWhile (not . ("Q:" `isPrefixOf`)) lines) "Q:"
-    ans = map (`getValue` "A:") (filter ("A:" `isPrefixOf`) lines)
-    sOpt = concatMap (`getValue` "S:") (filter ("S:" `isPrefixOf`) lines)
+    qText = getValue (head $ dropWhile (not . ("Q:" `isPrefixOf`)) ls) "Q:"
+    ans = map (`getValue` "A:") (filter ("A:" `isPrefixOf`) ls)
+    sOpt = concatMap (`getValue` "S:") (filter ("S:" `isPrefixOf`) ls)
 
 -- Hilfsfunktion zum Extrahieren des Werts aus einem "Key-Value-Paar"
 getValue :: String -> String -> String
@@ -103,8 +104,13 @@ parseKeyValue str = case break (== ':') str of
 removeOldAnswers :: String -> String -> IO Bool
 removeOldAnswers quizId pName = do
   let path = "data/" ++ quizId ++ "/" ++ pName ++ ".txt"
-  removeFile path
-  return True
+  fileExists <- doesFileExist path
+  if fileExists
+    then do
+      removeFile path
+      return True
+    else
+      return True
 
 storeAnswer :: String -> String -> Int -> String -> IO Bool
 storeAnswer quizId pName qNumber qAnswer = do

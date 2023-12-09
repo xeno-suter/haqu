@@ -14,8 +14,8 @@ singleChoiceQuestion :: Question -> Html
 singleChoiceQuestion question = e "DIV" (label ++ options)
   where
     label = e "LABEL" (q_question question)
-    options = e "DIV" (mconcat (zipWith (curry option) [0..] (q_answers question)))
-    option (index, answer) = inputField "radio" "answer" (show index) answer
+    options = e "DIV" (mconcat (zipWith (option :: Int -> String -> Html) [0..] (q_answers question)))
+    option index = inputField "radio" "answer" (show index)
 
 trueFalseQuestion :: Question -> Html
 trueFalseQuestion question = inputGroup label (i1 ++ i2)

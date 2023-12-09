@@ -24,7 +24,7 @@ library
   exposed-modules:     Haqu.Web,
                        Haqu.FileReader,
                        Haqu.Components.Helper, Haqu.Components.Form,
-                       Haqu.Pages.Home, Haqu.Pages.QuizPlayer,
+                       Haqu.Pages.Home, Haqu.Pages.QuizPlayer, Haqu.Pages.QuizQuestion,
                        Haqu.Model.Answer, Haqu.Model.KeyValue, Haqu.Model.Quiz
   build-depends:       
   hs-source-dirs:      lib
