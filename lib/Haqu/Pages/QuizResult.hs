@@ -15,16 +15,18 @@ type Html = String
 resultAction :: ActionM ()
 resultAction = do
   quizId <- captureParam "id"
-  answers <- liftIO $ readQuizAnswers quizId
-  quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
-  htmlString $ htmlDoc
-    ( e "H2" ("Results: " ++ q_name quiz)
-    ++ e "P" (q_desc quiz)
-    ++ table quiz answers) "haqu"
+  a <- liftIO $ readQuizAnswers quizId
+  q <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
+  htmlString $ htmlDoc (e "H2" ("Results: " ++ q_name q) ++ e "P" (q_desc q) ++ table q a) "haqu"
   where
-    table quiz answers = e "TABLE" (mconcat $ tableHeader quiz : tableRows quiz answers ++ [tableSummary quiz answers])
-    tableSummary quiz answers = e "TR" (mconcat $ e "TD" "Statistics" : map (tdCells quiz answers) [0..length (q_questions quiz) - 1])
+    table q a = e "TABLE" (mconcat $ tableHeader q : tableRows q a ++ [tableSummary q a])
   
+-- Hilfsfunktionen zum Rendern der Tabellen Zusammenfassung
+tableSummary :: Quiz -> QuizAnswers -> Html
+tableSummary q a = e "TR" (mconcat $ title : map (tdCells q a) [0..length (q_questions q) - 1])
+  where
+    title = e "TD" "Statistics"
+
 -- Hilfsfunktionen zum Rendern der Tabelle
 tdCells :: Quiz -> QuizAnswers -> Int -> Html
 tdCells q a i = e "TD" (show correctAnswersCount ++ "/" ++ show totalAnswersCount)
