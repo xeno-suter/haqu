@@ -1,3 +1,4 @@
+-- Module: Haqu.Model.Quiz Datenstruktur für Quizze
 module Haqu.Model.Quiz (
     Question(..),
     Quiz(..),

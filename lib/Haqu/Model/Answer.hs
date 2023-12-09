@@ -1,3 +1,4 @@
+-- Module: Haqu.Model.Answer Datenstruktur für Quizantworten
 module Haqu.Model.Answer (
     QuizAnswer(..),
     PlayerAnswers(..),

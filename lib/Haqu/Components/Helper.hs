@@ -1,3 +1,4 @@
+-- Module: Haqu.Components.Helper mit HTML Hilfsfunktionen
 module Haqu.Components.Helper (
   htmlString,
   htmlDoc,
@@ -9,6 +10,7 @@ import qualified Data.Text.Lazy as LT
 import Data.List
 import Web.Scotty (ActionM, html)
 
+-- Typdefinition für HTML
 type Html = String
 
 -- Standard HTML Head

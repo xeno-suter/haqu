@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- Module: Haqu.Pages.QuizPlayer - Aktion der Player Namens Seite
 module Haqu.Pages.QuizPlayer (quizNameAction) where
 
 import qualified Data.Text.Lazy as LT

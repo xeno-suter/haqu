@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- Module: Haqu.Web - Routing - Main Funktion
 module Haqu.Web where
+
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Haqu.Components.Helper
 import Haqu.Pages.Home
@@ -9,6 +11,7 @@ import Haqu.Pages.QuizQuestion
 import Web.Scotty
 import Haqu.Pages.QuizResult
 
+-- Typdefinition für HTML
 type Html = String
 
 -- Main Funktion mit Routing

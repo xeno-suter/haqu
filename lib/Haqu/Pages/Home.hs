@@ -1,3 +1,4 @@
+-- Module: Haqu.Pages.Home - Aktion der Home Seite
 module Haqu.Pages.Home (homeAction) where
 
 import Haqu.Components.Helper
@@ -6,6 +7,7 @@ import Control.Monad.IO.Class (liftIO)
 import Haqu.Model.Quiz
 import Haqu.DataHandler
 
+-- Typdefinition für HTML
 type Html = String
 
 -- Home Aktion mit liste aller Quizzes

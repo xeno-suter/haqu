@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- Module: Haqu.Pages.QuizQuestion - Aktion der Frage Seiten
 module Haqu.Pages.QuizQuestion (questionAction) where
 
 import qualified Data.Text.Lazy as LT
@@ -11,6 +12,7 @@ import Haqu.Model.Quiz
 import Haqu.DataHandler
 import Haqu.Components.Form
 
+-- Typdefinition für HTML
 type Html = String
 
 -- Quiz Question Method Dispatcher

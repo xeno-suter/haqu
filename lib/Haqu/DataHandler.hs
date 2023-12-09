@@ -1,3 +1,4 @@
+-- Module: Haqu.DataHandler - Zum Einlesen und Speichern von Quizzen und Antworten
 module Haqu.DataHandler (
   readAllQuizFiles,
   readQuizFile,
@@ -19,6 +20,7 @@ import System.Directory
       removeFile,
       doesFileExist )
 import Control.Monad
+import GHC.Base (Module)
 
 -- Common Funktion für File lesen und parsen
 readFileAndParse :: (String -> String -> a) -> FilePath -> IO a

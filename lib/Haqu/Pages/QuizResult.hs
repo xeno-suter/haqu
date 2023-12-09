@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- Module: Haqu.Pages.QuizResult - Aktion der Ergebnis Seite
 module Haqu.Pages.QuizResult (resultAction) where
 
 import Control.Monad.IO.Class (liftIO)
@@ -9,6 +10,7 @@ import Haqu.DataHandler
 import Haqu.Components.Helper
 import Web.Scotty
 
+-- Typdefinition für HTML
 type Html = String
 
 -- Quiz Result Action

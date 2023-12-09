@@ -1,3 +1,4 @@
+-- Module: Haqu.Components.Form mit Formular Komponenten
 module Haqu.Components.Form (
   singleChoiceQuestion,
   trueFalseQuestion,
@@ -8,6 +9,7 @@ module Haqu.Components.Form (
 import Haqu.Model.Quiz
 import Haqu.Components.Helper
 
+-- Typdefinition für HTML
 type Html = String
 
 -- Funktion zum Erstellen der "Single Choice" Frage
