@@ -16,7 +16,11 @@ quizNameRedirect :: ActionM ()
 quizNameRedirect = do
   quizId <- captureParam "id"
   player <- formParam "player"
-  redirect $ LT.pack $ "/quiz/" ++ quizId ++ "/0?player=" ++ player
+  removed <- liftIO $ removeOldAnswers quizId player
+  if removed then
+    redirect $ LT.pack $ "/quiz/" ++ quizId ++ "/0?player=" ++ player
+  else
+    error "Could not remove old answers"
 
 -- Quiz Name Form
 quizNameForm :: ActionM ()

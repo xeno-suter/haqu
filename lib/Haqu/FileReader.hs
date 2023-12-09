@@ -2,7 +2,8 @@ module Haqu.FileReader (
   readQuizFile,
   readPlayerAnswers,
   readQuizAnswers,
-  storeAnswer
+  storeAnswer,
+  removeOldAnswers
 ) where
 
 import Data.List
@@ -10,7 +11,7 @@ import Data.Char (isSpace)
 import Haqu.Model.Answer
 import Haqu.Model.Quiz
 import Haqu.Model.KeyValue
-import System.Directory ( doesDirectoryExist, createDirectory, listDirectory )
+import System.Directory ( doesDirectoryExist, createDirectory, listDirectory, removeFile )
 import Control.Monad
 
 -- Common Funktion für File lesen und parsen
@@ -98,6 +99,12 @@ parseKeyValue str = case break (== ':') str of
 
 
 ----------------------------------
+
+removeOldAnswers :: String -> String -> IO Bool
+removeOldAnswers quizId pName = do
+  let path = "data/" ++ quizId ++ "/" ++ pName ++ ".txt"
+  removeFile path
+  return True
 
 storeAnswer :: String -> String -> Int -> String -> IO Bool
 storeAnswer quizId pName qNumber qAnswer = do
