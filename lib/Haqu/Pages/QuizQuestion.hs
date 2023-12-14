@@ -27,7 +27,7 @@ handleGetRequest = do
   quizId <- captureParam "quiz"
   questionId <- captureParam "question"
   quiz <- liftIO $ readQuizFile ("data/" ++ quizId ++ ".txt")
-  htmlString $ htmlDoc (formWrapper "Submit" (questionInput quiz questionId)) "haqu"
+  htmlString $ htmlDoc (formWrapper "Submit answer" (questionInput quiz questionId)) "haqu"
 
 -- Quiz Question Redirect zur nächsten Frage oder zum Ergebnis
 handlePostRequest :: ActionM ()
