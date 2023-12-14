@@ -42,7 +42,8 @@ textInput l n = inputGroup label input
 inputField :: String -> String -> String -> String -> Html
 inputField iType n v l = e "DIV" field
   where
-    field = ea "INPUT" [("type", iType), ("name", n), ("value", v), ("required", "true")] l
+    field = ea "INPUT" [("type", iType), ("name", n),
+      ("value", v), ("required", "true")] l
 
 -- Formular Gruppe mit Label und Input
 inputGroup :: Html -> Html -> Html

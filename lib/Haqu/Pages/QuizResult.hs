@@ -34,8 +34,10 @@ tdCells :: Quiz -> QuizAnswers -> Int -> Html
 tdCells q a i = e "TD" (show correctAnswersCount ++ "/" ++ show totalAnswersCount)
   where
     question = getQuestion q i
-    correctAnswersCount = countCorrectAnswers question (flatAnswers (show i) (qa_player_answer a))
-    totalAnswersCount = countTotalAnswersPerQuestion (flatAnswers (show i) (qa_player_answer a))
+    correctAnswersCount = countCorrectAnswers question
+      (flatAnswers (show i) (qa_player_answer a))
+    totalAnswersCount = countTotalAnswersPerQuestion
+      (flatAnswers (show i) (qa_player_answer a))
 
 -- Hilfsfunktionen zum Rendern der Tabelle (Header)
 tDefTh :: Html
@@ -77,7 +79,8 @@ getQuestion quiz position = q_questions quiz !! position
 
 -- Hilfsfunktion zum Zählen der richtigen Antworten
 countCorrectAnswers :: Question -> [QuizAnswer] -> Int
-countCorrectAnswers question answers = length $ filter (isAnswerCorrect question) (map qa_answer answers)
+countCorrectAnswers question answers = length $
+  filter (isAnswerCorrect question) (map qa_answer answers)
 
 -- Hilfsfunktion zum Zählen der Antworten pro Frage
 countTotalAnswersPerQuestion :: [QuizAnswer] -> Int

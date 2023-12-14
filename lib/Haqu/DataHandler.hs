@@ -88,11 +88,11 @@ parseQuizContent [] acc = acc
 parseQuizContent (l:ls) (n, d, q)
     | "NAME:" `isPrefixOf` l = parseQuizContent ls (getValue l "NAME:", d, q)
     | "DESC:" `isPrefixOf` l = parseQuizContent ls (n, getValue l "DESC:", q)
-    | "TYPE:" `isPrefixOf` l = parseQuizContent remainingLines (n, d, q ++ [parseQuestion questionLines])
+    | "TYPE:" `isPrefixOf` l = parseQuizContent remLines (n, d, q ++ [parseQuestion questionLines])
     | otherwise = parseQuizContent ls (n, d, q)
   where
     questionLines = l:ls
-    remainingLines = ls
+    remLines = ls
 
 -- Funktion zum Parsen einer Frage
 parseQuestion :: [String] -> Question
